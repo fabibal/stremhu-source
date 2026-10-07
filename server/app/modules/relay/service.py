@@ -179,7 +179,13 @@ class RelayService:
             finally:
                 if future in requests:
                     requests.remove(future)
-                    if not requests:
+                    # Csak a saját listánkat töröljük. A read_piece_alert feldolgozása
+                    # már kivehette, és egy újabb kérés új listát hozhatott létre
+                    # ugyanarra a kulcsra.
+                    if (
+                        not requests
+                        and self.pending_piece_requests.get(request_key) is requests
+                    ):
                         self.pending_piece_requests.pop(request_key, None)
 
                 if not future.done():
